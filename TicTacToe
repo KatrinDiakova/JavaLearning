@@ -1,0 +1,132 @@
+package tictactoe;
+
+import java.util.Scanner;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        char[][] ticTacToe = new char[3][3];
+        // create empty grid
+
+        for (int i = 0; i < ticTacToe.length; i ++) {
+            for (int j = 0; j < ticTacToe[i].length; j++) {
+                ticTacToe[i][j] = '_';
+                if (i == 0 && j == 0) {
+                    System.out.println("---------");
+                }
+                if (j == 0) {
+                    System.out.print("| " + ticTacToe[i][j] + " ");
+                } else if (j == 2) {
+                    System.out.print(" " + ticTacToe[i][j] + " |");
+                } else {
+                    System.out.print(ticTacToe[i][j]);
+                }
+            }
+            System.out.println();
+        }
+        System.out.println("---------");
+
+        ticitaki:
+        for (int q = 1; q < 10; q++) {
+
+            int x = scanner.nextInt();
+            int y = scanner.nextInt();
+            boolean occupied = true;
+            do {
+                do {
+                    if (x < 1 || x > 3 || y < 1 || y > 3) {
+
+                        System.out.println("Coordinates should be from 1 to 3!");
+                        x = scanner.nextInt();
+                        y = scanner.nextInt();
+                    }
+                } while (x < 1 || x > 3 || y < 1 || y > 3);
+
+                for (int i = 0; i < ticTacToe.length; i++) {
+                    for (int j = 0; j < ticTacToe[i].length; j++) {
+                        if ((i == x - 1 && j == y - 1) && (ticTacToe[i][j] == 'X' || ticTacToe[i][j] == 'O')) {
+                            System.out.println("This cell is occupied! Choose another one!");
+                            occupied = false;
+                            do {
+                                x = scanner.nextInt();
+                                y = scanner.nextInt();
+                            } while ((i == x - 1 && j == y - 1) && (ticTacToe[i][j] == 'X' || ticTacToe[i][j] == 'O'));
+                        }
+                        if (i == x - 1 && j == y - 1 && ticTacToe[i][j] == '_') {
+                            occupied = true;
+                        }
+                    }
+                }
+            } while (!occupied);
+                for (int i = 0; i < ticTacToe.length; i++) {
+                    for (int j = 0; j < ticTacToe[i].length; j++) {
+                        if (i == x - 1 && j == y - 1 && q % 2 != 0 && ticTacToe[x - 1][y - 1] == '_') {
+                            ticTacToe[i][j] = 'X';
+                        } else if (i == x - 1 && j == y - 1 && q % 2 == 0 && ticTacToe[x - 1][y - 1] == '_') {
+                            ticTacToe[i][j] = 'O';
+                        }
+                        if (i == 0 && j == 0) {
+                            System.out.println("---------");
+                        }
+                        if (j == 0) {
+                            System.out.print("| " + ticTacToe[i][j] + " ");
+                        } else if (j == 2) {
+                            System.out.print(" " + ticTacToe[i][j] + " |");
+                        } else {
+                            System.out.print(ticTacToe[i][j]);
+                        }
+                    }
+                    System.out.println();
+                }
+                System.out.println("---------");
+
+            boolean xWin = false;
+            boolean oWin = false;
+            for (int i = 0; i < ticTacToe.length; i++) {
+                for (int j = 0; j < ticTacToe[i].length; j++) {
+                    if (ticTacToe[i][0] == 'X' && ticTacToe[i][1] == 'X' && ticTacToe[i][2] == 'X' ||
+                            ticTacToe[0][j] == 'X' && ticTacToe[1][j] == 'X' && ticTacToe[2][j] == 'X' ||
+                            ticTacToe[0][2] == 'X' && ticTacToe[1][1] == 'X' && ticTacToe[2][0] == 'X' ||
+                            ticTacToe[0][0] == 'X' && ticTacToe[1][1] == 'X' && ticTacToe[2][2] == 'X') {
+                        xWin = true;
+                    }
+                    if (ticTacToe[i][0] == 'O' && ticTacToe[i][1] == 'O' && ticTacToe[i][2] == 'O' ||
+                            ticTacToe[0][j] == 'O' && ticTacToe[1][j] == 'O' && ticTacToe[2][j] == 'O' ||
+                            ticTacToe[0][2] == 'O' && ticTacToe[1][1] == 'O' && ticTacToe[2][0] == 'O' ||
+                            ticTacToe[0][0] == 'O' && ticTacToe[1][1] == 'O' && ticTacToe[2][2] == 'O') {
+                        oWin = true;
+                    }
+                }
+            }
+            boolean draw = false;
+            int countX = 0;
+            int countO = 0;
+            for (int i = 0; i < ticTacToe.length; i++) {
+                for (int j = 0; j < ticTacToe[i].length; j++) {
+                    if (ticTacToe[i][j] == 'X') {
+                        countX++;
+                    }
+                    if (ticTacToe[i][j] == 'O') {
+                        countO++;
+                    }
+                }
+            }
+            if (xWin && oWin || countX - countO > 1 || countO - countX > 1) {
+                System.out.println("Impossible");
+            } else if (oWin) {
+                System.out.println("O wins");
+                break ticitaki;
+            } else if (xWin) {
+                System.out.println("X wins");
+                break ticitaki;
+            } else if (countX >= 4 && countO >= 4) {
+                draw = true;
+                System.out.println("Draw");
+            } else {
+                System.out.println("Game not finished");
+            }
+        }
+    }
+}
+
+
