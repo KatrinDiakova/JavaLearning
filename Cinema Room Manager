@@ -1,0 +1,185 @@
+package cinema;
+
+import java.util.Objects;
+import java.util.Scanner;
+
+public class Cinema {
+    public static String[][] createCinema(int row, int colum) {
+        String[][] cinemaArray = new String[row + 1][colum + 1];
+        for (int i = 0; i <= row; i++) {
+            for (int j = 0; j <= colum; j++) {
+                if (i == 0 && j == 0) {
+                    cinemaArray[i][j] = "  ";
+                } else if (i == 0) {
+                    cinemaArray[i][j] = j + " ";
+                } else if (j == 0) {
+                    cinemaArray[i][j] = i + " ";
+                } else {
+                    cinemaArray[i][j] = "S" + " ";
+                }
+            }
+        }
+        return cinemaArray;
+    }
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter the number of rows:");
+        int row = scanner.nextInt();
+        System.out.println("Enter the number of seats in each row:");
+        int colum = scanner.nextInt();
+        String[][] cinemaArray = createCinema(row, colum);
+        menu(cinemaArray);
+    }
+    public static void menu(String[][] cinemaArray) {
+        System.out.println();
+        System.out.printf("1. Show the seats%n2. Buy a ticket%n3. Statistics%n0. Exit%n");
+        Scanner scanner = new Scanner(System.in);
+        int action = scanner.nextInt();
+        switch (action) {
+            case 1:
+                printCinema(cinemaArray);
+                menu(cinemaArray);
+                break;
+            case 2:
+                buyTicket(cinemaArray);
+                menu(cinemaArray);
+                break;
+            case 3:
+                System.out.println("Number of purchased tickets: " + numbPurchasedTicket(cinemaArray));
+                System.out.printf("Percentage: %.2f%% " , percentage(cinemaArray));
+                System.out.println();
+                System.out.println("Current income: $" + currentIncome(cinemaArray));
+                System.out.println("Total income: $" + calculateTotalIncome(cinemaArray));
+                menu(cinemaArray);
+                break;
+            case 0:
+                break;
+            default:
+                menu(cinemaArray);
+                break;
+        }
+    }
+    public static void printCinema(String[][] cinemaArray) {
+        System.out.println();
+        System.out.println("Cinema:");
+        for (int i = 0; i < cinemaArray.length; i++) {
+            for (int j = 0; j < cinemaArray[i].length; j++) {
+                System.out.print(cinemaArray[i][j]);
+            }
+            System.out.println();
+        }
+    }
+
+    private static void buyTicket(String[][] cinemaArray) {
+        System.out.println();
+        int row = cinemaArray.length - 1;
+        int colum = cinemaArray[0].length - 1;
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter a row number:");
+        int rowNumb = scanner.nextInt();
+        System.out.println("Enter a seat number in that row:");
+        int seatNumb = scanner.nextInt();
+        calculatingPrice(cinemaArray, rowNumb);
+
+        do {
+            if (rowNumb > row || seatNumb > colum) {
+
+                System.out.println("Wrong input!");
+                System.out.println("Enter a row number:");
+                rowNumb = scanner.nextInt();
+                System.out.println("Enter a seat number in that row:");
+                seatNumb = scanner.nextInt();
+            }
+        } while (rowNumb > row || seatNumb > colum);
+        for (int i = 0; i < cinemaArray.length; i++) {
+            for (int j = 0; j < cinemaArray[i].length; j++) {
+                if ((i == rowNumb && j == seatNumb) && (Objects.equals(cinemaArray[i][j], "B" + " "))) {
+                    System.out.println("That ticket has already been purchased!");
+                    do {
+                        System.out.println("Enter a row number:");
+                        rowNumb = scanner.nextInt();
+                        System.out.println("Enter a seat number in that row:");
+                        seatNumb = scanner.nextInt();
+                    } while ((i == rowNumb && j == seatNumb) && (Objects.equals(cinemaArray[i][j], "B" + " ")));
+                }
+            }
+        }
+        System.out.printf("Ticket price: $" + calculatingPrice(cinemaArray, rowNumb));
+        cinemaArray[rowNumb][seatNumb] = "B" + " ";
+        numbPurchasedTicket(cinemaArray);
+    }
+    public static int numbPurchasedTicket(String[][] cinemaArray) {
+        int numbBuyTicket = 0;
+        for (int i = 0; i < cinemaArray.length; i++) {
+            for (int j = 0; j < cinemaArray[i].length; j++) {
+                if (Objects.equals(cinemaArray[i][j], "B" + " ")) {
+                    numbBuyTicket += 1;
+                }
+            }
+        }
+        return numbBuyTicket;
+    }
+    public static double percentage(String[][] cinemaArray) {
+        double row = cinemaArray.length - 1;
+        double colum = cinemaArray[0].length - 1;
+        return 100 * numbPurchasedTicket(cinemaArray) / (row * colum);
+    }
+    public static int currentIncome(String[][] cinemaArray) {
+        int smallRoom = 60;
+        int firstRow = cinemaArray.length / 2 - 1;
+        int seatsTotal = cinemaArray.length * cinemaArray[0].length;
+        int currInc = 0;
+        for (int i = 0; i < cinemaArray.length; i++) {
+            for (int j = 0; j < cinemaArray[i].length; j++) {
+                if (Objects.equals(cinemaArray[i][j], "B" + " ")) {
+                    if (seatsTotal < smallRoom) {
+                        currInc += 10;
+                    } else if (seatsTotal > smallRoom) {
+                        if (i <= firstRow && i != 0 && j != 0) {
+                            currInc += 10;
+                        } else {
+                            currInc += 8;
+                        }
+                    }
+                }
+            }
+        }
+        return currInc;
+    }
+    private static int calculatingPrice(String[][] cinemaArray, int rowNumb) {
+        int smallRoom = 60;
+        int seatsTotal = cinemaArray.length * cinemaArray[0].length;
+        int price = 0;
+        if (seatsTotal < smallRoom) {
+            price = 10;
+        } else if (seatsTotal > smallRoom) {
+            if (rowNumb <= cinemaArray.length / 2 - 1) {
+                price = 10;
+            } else {
+                price = 8;
+            }
+        }
+        return price;
+    }
+    public static int calculateTotalIncome(String[][] cinemaArray) {
+        int smallRoom = 60;
+        int row = cinemaArray.length - 1;
+        int colum = cinemaArray[0].length - 1;
+        int seatsTotal = row * colum;
+        int totalIncome = 0;
+        if (seatsTotal < smallRoom) {
+            totalIncome = seatsTotal * 10;
+        } else if (seatsTotal > smallRoom) {
+            totalIncome = row / 2 * colum * 10
+                    + ((row - row / 2) * colum * 8);
+        }
+        return totalIncome;
+    }
+}
+
+
+
+
+
+
+
