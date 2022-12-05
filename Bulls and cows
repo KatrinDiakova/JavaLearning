@@ -1,0 +1,116 @@
+package bullscows;
+
+import java.util.*;
+
+public class Main {
+    static Scanner scanner = new Scanner(System.in);
+    static StringBuilder secretCode = new  StringBuilder();
+    static int cow = 0, bull = 0;
+    static String set = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+    public static void main(String[] args) {
+        int length = getSecretLength();
+        int symbols = getSymbolsRangeLength(length);
+        startGame(getRandom(length, symbols));
+    }
+
+    private static StringBuilder getRandom(int length, int symbols) {
+        List<Character> list = new ArrayList<>();
+        for (int i = 0; i < symbols; i++) {
+            list.add(set.charAt(i));
+        }
+        Collections.shuffle(list);
+        for (int i = 0; i < length; i++) {
+            secretCode.append(list.get(i));
+        }
+        String stars = "*".repeat(length);
+        String symbolRange = getSymbolRange(symbols);
+        System.out.printf("The secret is prepared: %s (%s).", stars, symbolRange);
+        return secretCode;
+    }
+    private static void startGame(StringBuilder number) {
+        System.out.println("Okay, let's start a game!");
+        int turn = 1;
+        while (bull != number.length()) {
+            System.out.printf("\nTurn %d:\n", turn);
+            String input = scanner.next();
+            BullsCowsCheck(number, input);
+            turn++;
+        }
+        System.out.println("\nCongratulations! You guessed the secret code.");
+    }
+
+    public static void BullsCowsCheck(StringBuilder secretCode, String input) {
+        cow = 0;
+        bull = 0;
+        for (int i = 0; i < secretCode.length(); i++) {
+            for (int j = 0; j < input.length(); j++) {
+                if (secretCode.charAt(i) == input.charAt(j)) {
+                    if (i == j) {
+                        bull++;
+                    } else {
+                        cow++;
+                    }
+                }
+            }
+        }
+        printGrade(bull, cow, secretCode);
+    }
+
+    private static void printGrade(int bull, int cow, StringBuilder secretCode) {
+        if (bull == 0 && cow == 0) {
+            System.out.printf("Grade: None. The secret code is %s.", secretCode);
+        } else if (bull == 0 && cow > 0) {
+            System.out.printf("Grade: %d cow(s). The secret code is %s.", cow, secretCode);
+        } else if (bull > 0 && cow == 0) {
+            System.out.printf("Grade: %d bull(s). The secret code is %s.", bull, secretCode);
+        } else {
+            System.out.printf("Grade: %d bull(s) and %d cow(s). The secret code is %s.", bull, cow, secretCode);
+        }
+    }
+
+    private static int getSecretLength() {
+        System.out.println("Input the length of the secret code:");
+        String length = scanner.nextLine();
+        int secretLength = 0;
+        try {
+            secretLength = Integer.parseInt(length);
+
+        } catch (NumberFormatException e) {
+            System.out.println("Error: \"" + length + "\" isn't a valid number.");
+            System.exit(0);
+        }
+        if (secretLength > 36) {
+            System.out.println("Error: secret length cannot be greater than 36");
+            System.exit(0);
+        } else if (secretLength < 1) {
+            System.out.println("Error: secret length cannot be less than 1");
+            System.exit(0);
+        }
+        return secretLength;
+    }
+    private static int getSymbolsRangeLength(int length) {
+        System.out.println("Input the number of possible symbols in the code:");
+        int symbols = scanner.nextInt();
+
+        if (symbols > 36) {
+            System.out.println("Error: maximum number of possible symbols in the code is 36 (0-9, a-z).");
+            System.exit(0);
+        } else if (length > symbols) {
+            System.out.printf("Error: it's not possible to generate a code with a length of %d with %d unique symbols.", length, symbols);
+            System.exit(0);
+        }  else if (symbols < 1) {
+            System.out.println("Error: symbols range length cannot be less than 1");
+            System.exit(0);
+        }
+        return symbols;
+    }
+    private static String getSymbolRange(int symbols) {
+        String[] arraySet = set.trim().split("");
+        if (symbols < 10) {
+            return "0-" + arraySet[symbols - 1];
+        } else {
+            return "0-9, a-" + arraySet[symbols - 1];
+        }
+    }
+}
