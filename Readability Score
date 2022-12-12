@@ -1,0 +1,147 @@
+package readability;
+
+import java.io.*;
+import java.util.*;
+import java.util.regex.*;
+
+
+public class Main {
+    static Scanner scanner;
+    static int age, ageRangeMax, syllables, polysyllables;
+    static double words, sentences, characters, ARI, FK, SMOG, CL, ari, fk, smog, cl;
+    static String command = "";
+
+    public static void main(String[] args) {
+        if (args.length > 0 && args[0] != null) {
+            try {
+                scanner = new Scanner(new File(args[0]));
+                String text = "";
+                while (scanner.hasNext()) {
+                    String newLine = scanner.nextLine();
+                    text = text.concat(newLine).concat(" ");
+                }
+                text = text.trim();
+                words = text.split("( |\n|\t)").length;
+                sentences = text.split("(\\.|\\?|!)").length;
+                characters = text.replaceAll("( |\n|\t)","").split("").length;
+                printText(text);
+                analyzeText(text);
+                chooseScore();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } finally {
+                scanner.close();
+            }
+        }
+    }
+
+    private static void printText(String text) {
+        System.out.println("The text is:");
+        System.out.println(text);
+    }
+
+    private static void analyzeText(String text) {
+        syllables += countSyllables(text);
+        polysyllables = calPolysyllables(text);
+        System.out.printf("""
+                        Words: %.0f
+                        Sentences: %.0f
+                        Characters: %.0f
+                        Syllables: %d
+                        Polysyllables: %d
+                        """, words, sentences, characters, syllables, polysyllables);
+        System.out.println("Enter the score you want to calculate (ARI, FK, SMOG, CL, all): ");
+        calculateARI();
+        calculateFK();
+        calculateSMOG();
+        calculateCL();
+    }
+    private static int countSyllables(String text) {
+        int syllables = 0;
+        String[] textArray = text.replaceAll("( |\n|\t)", " ").split(" ");
+        for (String word : textArray) {
+            syllables += countWordSyllables(word);
+        }
+        if (syllables == 0) {
+            return 1;
+        }
+        return syllables;
+    }
+    private static int countWordSyllables(String word) {
+        String i = "(?i)[aiouy][aeiouy]*|e[aeiouy]*(?!d?\\b)";
+        Matcher m = Pattern.compile(i).matcher(word);
+        int count = 0;
+
+        while (m.find()) {
+            count++;
+        }
+        return Math.max(count, 1);
+    }
+    private static int calPolysyllables(String text) {
+        int polysyllables = 0;
+        String[] textArray = text.replaceAll("( |\n|\t)", " ").split(" ");
+        for (String word : textArray) {
+            int syllables = countWordSyllables(word);
+            if (syllables > 2) {
+                polysyllables++;
+            }
+        }
+        return polysyllables;
+    }
+    private static void chooseScore() {
+        System.out.println("\nEnter the score you want to calculate (ARI, FK, SMOG, CL, all): ");
+        while (scanner.hasNextLine()) {
+            command = scanner.next().trim();
+        }
+        switch (command) {
+            case "ARI" -> calculateARI();
+            case "FK" -> calculateFK();
+            case "SMOG" -> calculateSMOG();
+            case "CL" -> calculateCL();
+            case "all" -> calculateAll();
+        }
+    }
+    private static double calculateARI() {
+        ARI = 4.71 * (characters / words) + 0.5 * (words / sentences) - 21.43;
+        ageRangeMax = getAgeRangeMax(ARI);
+        System.out.printf("\nAutomated Readability Index: %.2f (about %d-year-olds).", ARI, ageRangeMax);
+        return ARI;
+    }
+    private static double calculateFK() {
+        FK = 0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59;
+        ageRangeMax = getAgeRangeMax(FK);
+        System.out.printf("\nFlesch–Kincaid readability tests: %.2f (about %d-year-olds).", FK, ageRangeMax);
+        return FK;
+    }
+    private static double calculateSMOG() {
+        SMOG = 1.043 * Math.sqrt(polysyllables * 30 / sentences) + 3.1291;
+        ageRangeMax = getAgeRangeMax(SMOG);
+        System.out.printf("\nSimple Measure of Gobbledygook: %.2f (about %d-year-olds).", SMOG, ageRangeMax);
+        return SMOG;
+    }
+    private static double calculateCL() {
+        double L = characters / (words / 100);
+        double S = sentences / (words / 100);
+        CL = 0.0588 * L - 0.296 * S - 15.8;
+        ageRangeMax = getAgeRangeMax(CL);
+        System.out.printf("\nColeman–Liau index: %.2f (about %d-year-olds).", CL, ageRangeMax);
+        return CL;
+    }
+
+    private static void calculateAll() {
+        ari = calculateARI();
+        fk = calculateFK();
+        smog = calculateSMOG();
+        cl = calculateCL();
+        double average = (ari + fk + smog + cl) / 4.0;
+        System.out.printf("\nThis text should be understood in average by %.2f-year-olds.", average);
+    }
+    private static int getAgeRangeMax(double score) {
+        age = (int) Math.ceil(score);
+        if (score == 14) {
+            return age + 8;
+        } else {
+            return age + 5;
+        }
+    }
+}
